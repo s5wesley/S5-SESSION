@@ -1,10 +1,10 @@
 pipeline {
     agent any
-
+    
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub')
     }
-
+    
     options {
         buildDiscarder(logRotator(numToKeepStr: '5'))
         disableConcurrentBuilds()
@@ -21,15 +21,13 @@ pipeline {
                 }
             }
             steps {
-                script {
-                    sh '''
-                        id
-                        cd weatherapp/auth/src/main
-                        go build 
-                        cd -
-                        ls -la
-                    '''
-                }
+                sh '''
+                    id
+                    cd weatherapp/auth/src/main
+                    go build 
+                    cd -
+                    ls -la
+                '''
             }
         }
 
@@ -41,12 +39,10 @@ pipeline {
                 }
             }
             steps {
-                script {
-                    sh '''
-                        cd weatherapp/UI
-                        npm run
-                    '''
-                }
+                sh '''
+                    cd weatherapp/UI
+                    npm run
+                '''
             }
         }
 
@@ -58,12 +54,10 @@ pipeline {
                 }
             }
             steps {
-                script {
-                    sh '''
-                        cd weatherapp/weather
-                        pip3 install -r requirements.txt
-                    '''
-                }
+                sh '''
+                    cd weatherapp/weather
+                    pip3 install -r requirements.txt
+                '''
             }
         }
 
@@ -79,9 +73,7 @@ pipeline {
             }
             steps {
                 withSonarQubeEnv('Sonar') {
-                    script {
-                        sh "${scannerHome}/bin/sonar-scanner"
-                    }
+                    sh "${scannerHome}/bin/sonar-scanner"
                 }
             }
         }
@@ -96,18 +88,23 @@ pipeline {
 
         stage('Login') {
             steps {
-                script {
-                    sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
-                }
+                sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
             }
         }
 
-        // Rest of your stages...
+        stage('Build auth') {
+            steps {
+                sh '''
+                    cd $WORKSPACE/weatherapp/auth
+                    docker build -t devopseasylearning/weatherapp-auth:${BUILD_NUMBER} .
+                '''
+            }
+        }
+
+        // ... (similar build and push stages for UI, weather, Redis, and database)
 
         stage('Generate-compose') {
-            agent {
-                label "deployer"
-            }
+            agent any  // Using any available agent
             when {
                 expression {
                     env.GIT_BRANCH == 'origin/develop'
@@ -123,7 +120,15 @@ pipeline {
                     ]) {
                         sh '''
                             cat <<EOF > docker-compose.yml
-                                // Your compose file content here
+                            version: '3.5'
+                            services:
+                              # ... (service configurations)
+                            networks:
+                              weatherapp:
+
+                            volumes:
+                              db-data:
+                              redis-data:
                             EOF
                         '''
                     }
@@ -132,9 +137,7 @@ pipeline {
         }
 
         stage('Deploy') {
-            agent {
-                label "deployer"
-            }
+            agent any  // Using any available agent
             when {
                 expression {
                     env.GIT_BRANCH == 'origin/develop'
