@@ -117,7 +117,7 @@ pipeline {
             steps {
                 sh '''
                     cd $WORKSPACE/weatherapp/auth
-                    docker build -t devopseasylearning/weatherapp-auth:${BUILD_NUMBER} .
+                    docker build -t bulawesley/auth:${BUILD_NUMBER} .
                 '''
             }
         }
@@ -128,7 +128,7 @@ pipeline {
             }
             steps {
                 sh '''
-                    docker push devopseasylearning/weatherapp-auth:${BUILD_NUMBER}
+                    docker push bulawesley/auth:${BUILD_NUMBER}
                 '''
             }
         }
@@ -137,7 +137,7 @@ pipeline {
             steps {
                 sh '''
                     cd $WORKSPACE/weatherapp/UI
-                    docker build -t devopseasylearning/weatherapp-ui:${BUILD_NUMBER} .
+                    docker build -t bulawesley/ui:${BUILD_NUMBER} .
                 '''
             }
         }
@@ -148,7 +148,7 @@ pipeline {
             }
             steps {
                 sh '''
-                    docker push devopseasylearning/weatherapp-ui:${BUILD_NUMBER}
+                    docker push bulawesley/ui:${BUILD_NUMBER}
                 '''
             }
         }
@@ -157,7 +157,7 @@ pipeline {
             steps {
                 sh '''
                     cd $WORKSPACE/weatherapp/weather
-                    docker build -t devopseasylearning/weatherapp-weather:${BUILD_NUMBER} .
+                    docker build -t bulawesley/weather:${BUILD_NUMBER} .
                 '''
             }
         }
@@ -168,7 +168,7 @@ pipeline {
             }
             steps {
                 sh '''
-                    docker push devopseasylearning/weatherapp-weather:${BUILD_NUMBER}
+                    docker push bulawesley/weather:${BUILD_NUMBER}
                 '''
             }
         }
@@ -177,7 +177,7 @@ pipeline {
             steps {
                 sh '''
                     cd $WORKSPACE/weatherapp/redis
-                    docker build -t devopseasylearning/weatherapp-redis:${BUILD_NUMBER} .
+                    docker build -t bulawesley/redis:${BUILD_NUMBER} .
                 '''
             }
         }
@@ -188,7 +188,7 @@ pipeline {
             }
             steps {
                 sh '''
-                    docker push devopseasylearning/weatherapp-redis:${BUILD_NUMBER}
+                    docker push bulawesley/redis:${BUILD_NUMBER}
                 '''
             }
         }
@@ -197,7 +197,7 @@ pipeline {
             steps {
                 sh '''
                     cd $WORKSPACE/weatherapp/db
-                    docker build -t devopseasylearning/weatherapp-db:${BUILD_NUMBER} .
+                    docker build -t bulawesley/db:${BUILD_NUMBER} .
                 '''
             }
         }
@@ -208,14 +208,14 @@ pipeline {
             }
             steps {
                 sh '''
-                    docker push devopseasylearning/weatherapp-db:${BUILD_NUMBER}
+                    docker push bulawesley/db:${BUILD_NUMBER}
                 '''
             }
         }
 
         stage('warning') {
             agent { 
-                label "s5-prod-agent"
+                label "jenkins-static-agent"
             }
             when {
                 expression { env.GIT_BRANCH == 'origin/develop' }
@@ -230,7 +230,7 @@ pipeline {
 
         stage('Generate-compose') {
             agent { 
-                label "s5-prod-agent"
+                label "jenkins-static-agent"
             }
             when {
                 expression { env.GIT_BRANCH == 'origin/develop' }
@@ -249,7 +249,7 @@ pipeline {
                               services:
                                 db:
                                   container_name: weatherapp-db
-                                  image: devopseasylearning/weatherapp-db:${BUILD_NUMBER}
+                                  image: bulawesley/db:${BUILD_NUMBER}
                                   environment:
                                     MYSQL_ROOT_PASSWORD: ${WEATHERAPP_MYSQL_ROOT_PASSWORD}
                                   volumes:
@@ -260,7 +260,7 @@ pipeline {
 
                                 redis:
                                   container_name: weatherapp-redis
-                                  image: devopseasylearning/weatherapp-redis:${BUILD_NUMBER}
+                                  image: bulawesley/redis:${BUILD_NUMBER}
                                   networks:
                                     - weatherapp
                                   environment:
@@ -272,7 +272,7 @@ pipeline {
 
                                 weather:
                                   container_name: weatherapp-weather
-                                  image: devopseasylearning/weatherapp-weather:${BUILD_NUMBER}
+                                  image: bulawesley/weather:${BUILD_NUMBER}
                                   expose:
                                     - 5000
                                   environment:
@@ -285,7 +285,7 @@ pipeline {
                                     - redis  # Weather depends on both db and redis
                                 auth:
                                   container_name: weatherapp-auth
-                                  image: devopseasylearning/weatherapp-auth:${BUILD_NUMBER}
+                                  image: bulawesley/auth:${BUILD_NUMBER}
                                   environment:
                                     DB_HOST: db
                                     DB_PASSWORD: ${WEATHERAPP_DB_PASSWORD}
@@ -299,7 +299,7 @@ pipeline {
 
                                 ui:
                                   container_name: weatherapp-ui
-                                  image: devopseasylearning/weatherapp-ui:${BUILD_NUMBER}
+                                  image: bulawesley/ui:${BUILD_NUMBER}
                                   environment:
                                     AUTH_HOST: auth
                                     AUTH_PORT: 8080
@@ -331,7 +331,7 @@ pipeline {
 
         stage('Deploy') {
             agent { 
-                label "s5-prod-agent"
+                label "jenkins-static-agent"
             }
             when {
                 expression { env.GIT_BRANCH == 'origin/develop' }
@@ -347,7 +347,7 @@ pipeline {
 
         stage('checking deployment') {
             agent { 
-                label "s5-prod-agent"
+                label "jenkins-static-agent"
             }
             when {
                 expression { env.GIT_BRANCH == 'origin/develop' }
@@ -361,7 +361,7 @@ pipeline {
 
         stage('checking website') {
             agent { 
-                label "s5-prod-agent"
+                label "jenkins-static-agent"
             }
             when {
                 expression { env.GIT_BRANCH == 'origin/develop' }
