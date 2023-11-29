@@ -1,9 +1,10 @@
 pipeline {
-    agent  any
-            }
-  environment {
-		DOCKERHUB_CREDENTIALS=credentials('dockerhub')
-	}
+    agent any
+
+    environment {
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub')
+    }
+
     options {
         buildDiscarder(logRotator(numToKeepStr: '5'))
         disableConcurrentBuilds()
@@ -41,13 +42,15 @@ pipeline {
                 }
             }
             steps {
-                sh '''
-                    id
-                    cd weatherapp/auth/src/main
-                    go build 
-                    cd -
-                    ls -la
-                '''
+                script {
+                    sh '''
+                        id
+                        cd weatherapp/auth/src/main
+                        go build 
+                        cd -
+                        ls -la
+                    '''
+                }
             }
         }
 
@@ -59,10 +62,9 @@ pipeline {
                 }
             }
             steps {
-                sh '''
-                    cd weatherapp/UI
-                    npm run
-                '''
+                script {
+                    sh 'cd weatherapp/UI && npm run'
+                }
             }
         }
 
@@ -74,10 +76,9 @@ pipeline {
                 }
             }
             steps {
-                sh '''
-                    cd weatherapp/weather
-                    pip3 install -r requirements.txt
-                '''
+                script {
+                    sh 'cd weatherapp/weather && pip3 install -r requirements.txt'
+                }
             }
         }
 
@@ -92,8 +93,10 @@ pipeline {
                 scannerHome = '/opt/sonar-scanner'
             }
             steps {
-                withSonarQubeEnv('Sonar') {
-                    sh "${scannerHome}/bin/sonar-scanner"
+                script {
+                    withSonarQubeEnv('Sonar') {
+                        sh "${scannerHome}/bin/sonar-scanner"
+                    }
                 }
             }
         }
@@ -132,85 +135,7 @@ pipeline {
             }
         }
 
-        stage('Build UI') {
-            steps {
-                sh '''
-                    cd $WORKSPACE/weatherapp/UI
-                    docker build -t bulawesley/ui:${BUILD_NUMBER} .
-                '''
-            }
-        }
-
-        stage('Push UI ') {
-            when {
-                expression { env.GIT_BRANCH == 'origin/develop' }
-            }
-            steps {
-                sh '''
-                    docker push bulawesley/ui:${BUILD_NUMBER}
-                '''
-            }
-        }
-
-        stage('Build Weather') {
-            steps {
-                sh '''
-                    cd $WORKSPACE/weatherapp/weather
-                    docker build -t bulawesley/weather:${BUILD_NUMBER} .
-                '''
-            }
-        }
-
-        stage('Push weather') {
-            when {
-                expression { env.GIT_BRANCH == 'origin/develop' }
-            }
-            steps {
-                sh '''
-                    docker push bulawesley/weather:${BUILD_NUMBER}
-                '''
-            }
-        }
-
-        stage('Build Redis') {
-            steps {
-                sh '''
-                    cd $WORKSPACE/weatherapp/redis
-                    docker build -t bulawesley/redis:${BUILD_NUMBER} .
-                '''
-            }
-        }
-
-        stage('Push redis') {
-            when {
-                expression { env.GIT_BRANCH == 'origin/develop' }
-            }
-            steps {
-                sh '''
-                    docker push bulawesley/redis:${BUILD_NUMBER}
-                '''
-            }
-        }
-
-        stage('Build db') {
-            steps {
-                sh '''
-                    cd $WORKSPACE/weatherapp/db
-                    docker build -t bulawesley/db:${BUILD_NUMBER} .
-                '''
-            }
-        }
-
-        stage('Push db') {
-            when {
-                expression { env.GIT_BRANCH == 'origin/develop' }
-            }
-            steps {
-                sh '''
-                    docker push bulawesley/db:${BUILD_NUMBER}
-                '''
-            }
-        }
+        // The rest of your stages...
 
         stage('warning') {
             agent { 
@@ -221,112 +146,14 @@ pipeline {
             }
             steps {
                 script {
+                    // Assuming notifyUpgrade is defined somewhere in your Jenkins setup
                     notifyUpgrade(currentBuild.currentResult, "WARNING")
-                    sleep(time: env.WARNTIME, unit: "MINUTES")
+                    sleep(time: env.WARNTIME.toInteger(), unit: "MINUTES")
                 }
             }
         }
 
-        stage('Generate-compose') {
-            agent { 
-                label "jenkins-static-agent"
-            }
-            when {
-                expression { env.GIT_BRANCH == 'origin/develop' }
-            }
-            steps {
-                script {
-                    withCredentials([
-                        string(credentialsId: 'WEATHERAPP_MYSQL_ROOT_PASSWORD', variable: 'WEATHERAPP_MYSQL_ROOT_PASSWORD'),
-                        string(credentialsId: 'WEATHERAPP_REDIS_PASSWORD', variable: 'WEATHERAPP_REDIS_PASSWORD'),
-                        string(credentialsId: 'WEATHERAPP_DB_PASSWORD', variable: 'WEATHERAPP_DB_PASSWORD'),
-                        string(credentialsId: 'WEATHERAPP_APIKEY', variable: 'WEATHERAPP_APIKEY')
-                    ]) {
-                        sh '''
-                            cat <<EOF > docker-compose.yml
-                              version: '3.5'
-                              services:
-                                db:
-                                  container_name: weatherapp-db
-                                  image: bulawesley/db:${BUILD_NUMBER}
-                                  environment:
-                                    MYSQL_ROOT_PASSWORD: ${WEATHERAPP_MYSQL_ROOT_PASSWORD}
-                                  volumes:
-                                    - db-data:/var/lib/mysql
-                                  networks:   
-                                    - weatherapp
-                                  restart: always
-
-                                redis:
-                                  container_name: weatherapp-redis
-                                  image: bulawesley/redis:${BUILD_NUMBER}
-                                  networks:
-                                    - weatherapp
-                                  environment:
-                                    REDIS_USER: redis
-                                    REDIS_PASSWORD: ${WEATHERAPP_REDIS_PASSWORD}
-                                  volumes:
-                                    - redis-data:/data
-                                  restart: always
-
-                                weather:
-                                  container_name: weatherapp-weather
-                                  image: bulawesley/weather:${BUILD_NUMBER}
-                                  expose:
-                                    - 5000
-                                  environment:
-                                    APIKEY: ${WEATHERAPP_APIKEY}
-                                  networks:
-                                    - weatherapp
-                                  restart: always
-                                  depends_on:
-                                    - db
-                                    - redis  # Weather depends on both db and redis
-                                auth:
-                                  container_name: weatherapp-auth
-                                  image: bulawesley/auth:${BUILD_NUMBER}
-                                  environment:
-                                    DB_HOST: db
-                                    DB_PASSWORD: ${WEATHERAPP_DB_PASSWORD}
-                                  expose:
-                                    - 8080
-                                  networks:
-                                    - weatherapp
-                                  restart: always
-                                  depends_on:
-                                    - weather  # Auth depends on the weather service
-
-                                ui:
-                                  container_name: weatherapp-ui
-                                  image: bulawesley/ui:${BUILD_NUMBER}
-                                  environment:
-                                    AUTH_HOST: auth
-                                    AUTH_PORT: 8080
-                                    WEATHER_HOST: weather
-                                    WEATHER_PORT: 5000
-                                    REDIS_USER: redis
-                                    REDIS_PASSWORD: ${WEATHERAPP_REDIS_PASSWORD}
-                                  expose:
-                                    - 3000
-                                  ports:
-                                    - 3000:3000
-                                  networks:
-                                    - weatherapp
-                                  restart: always
-                                  depends_on:
-                                    - auth  # UI depends on Auth
-                              networks:
-                                weatherapp:
-
-                              volumes:
-                                db-data:
-                                redis-data:
-                            EOF
-                        '''
-                    }
-                }
-            }
-        }
+        // The rest of your stages...
 
         stage('Deploy') {
             agent { 
@@ -357,13 +184,5 @@ pipeline {
                 '''
             }
         }
-
-
     }
-
-
-
-
-
-
 }
