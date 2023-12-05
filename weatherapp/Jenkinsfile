@@ -183,7 +183,7 @@ cat <<EOF > docker-compose.yml
   services:
     db:
       container_name: weatherapp-db
-      image: devopseasylearning/weatherapp-db:${BUILD_NUMBER}
+      image: bulawesley/db:${BUILD_NUMBER}
       environment:
         MYSQL_ROOT_PASSWORD: ${WEATHERAPP_MYSQL_ROOT_PASSWORD}
       volumes:
@@ -194,7 +194,7 @@ cat <<EOF > docker-compose.yml
   
     redis:
       container_name: weatherapp-redis
-      image: devopseasylearning/weatherapp-redis:${BUILD_NUMBER}
+      image: bulawesley/redis:${BUILD_NUMBER}
       networks:
         - weatherapp
       environment:
@@ -206,7 +206,7 @@ cat <<EOF > docker-compose.yml
   
     weather:
       container_name: weatherapp-weather
-      image: devopseasylearning/weatherapp-weather:${BUILD_NUMBER}
+      image: bulawesley/weather:${BUILD_NUMBER}
       expose:
         - 5000
       environment:
@@ -219,7 +219,7 @@ cat <<EOF > docker-compose.yml
         - redis  # Weather depends on both db and redis
     auth:
       container_name: weatherapp-auth
-      image: devopseasylearning/weatherapp-auth:${BUILD_NUMBER}
+      image: bulawesley/auth:${BUILD_NUMBER}
       environment:
         DB_HOST: db
         DB_PASSWORD: ${WEATHERAPP_DB_PASSWORD}
@@ -233,7 +233,7 @@ cat <<EOF > docker-compose.yml
   
     ui:
       container_name: weatherapp-ui
-      image: devopseasylearning/weatherapp-ui:${BUILD_NUMBER}
+      image: bulawesley/ui:${BUILD_NUMBER}
       environment:
        AUTH_HOST: auth
        AUTH_PORT: 8080
@@ -269,7 +269,7 @@ EOF
 
         stage('Deploy') {
             agent { 
-                label "jenkins-static-agent"
+                label "s5-prod-agent"
             }
             when {
                 expression { env.GIT_BRANCH == 'origin/develop' }
@@ -285,7 +285,7 @@ EOF
 
         stage('checking deployment') {
             agent { 
-                label "jenkins-static-agent"
+                label "s5-prod-agent"
             }
             when {
                 expression { env.GIT_BRANCH == 'origin/develop' }
@@ -314,4 +314,4 @@ EOF
         }
 
     }
-    
+
