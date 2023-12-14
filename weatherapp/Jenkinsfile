@@ -139,7 +139,7 @@ pipeline {
 
         stage('checking website') {
             agent { 
-                label "production"
+                label "Jenkins-static-agent"
             }
             when { 
                 expression {
