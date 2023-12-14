@@ -3,7 +3,7 @@ pipeline {
         label ("deployer")
     }
     environment {
-        DOCKERHUB_CREDENTIALS=credentials('dockerhub')
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub')
     }
     options {
         buildDiscarder(logRotator(numToKeepStr: '5'))
@@ -90,7 +90,7 @@ pipeline {
                 // scannerHome = tool 'Sonar'
                 scannerHome='/opt/sonar-scanner'
             }
-            steps{
+            steps {
                 withSonarQubeEnv('Sonar') {
                     sh "${scannerHome}/bin/sonar-scanner"
                 }
@@ -107,8 +107,9 @@ pipeline {
 
         stage('Login') {
             steps {
-                 withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
-                        sh "docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD"
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials', usernameVariable: 'DOCKERHUB_USERNAME', passwordVariable: 'DOCKERHUB_PASSWORD')]) {
+                    sh "docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD"
+                }
             }
         }
 
@@ -153,3 +154,4 @@ pipeline {
             }
         }
     }
+}
