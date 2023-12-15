@@ -103,7 +103,7 @@ pipeline {
             steps {
                 timeout(time: 1, unit: 'HOURS') {
                     waitForQualityGate abortPipeline: true 
-                }
+                    }
             }
         }
 
@@ -119,7 +119,7 @@ pipeline {
             steps {
                 sh '''
                     cd $WORKSPACE/weatherapp/auth
-                    docker build -t devopseasylearning/weatherapp-auth:$v{BUILD_NUMBER} .
+                    docker build -t devopseasylearning/weatherapp-auth:${BUILD_NUMBER} .
                 '''
             }
         }
@@ -132,7 +132,7 @@ pipeline {
             }
             steps {
                 sh '''
-                    docker push devopseasylearning/weatherapp-auth:$v{BUILD_NUMBER}
+                    docker push devopseasylearning/weatherapp-auth:${BUILD_NUMBER}
                 '''
             }
         }
@@ -141,7 +141,7 @@ pipeline {
             steps {
                 sh '''
                     cd $WORKSPACE/weatherapp/UI
-                    docker build -t devopseasylearning/weatherapp-ui:$v{BUILD_NUMBER} .
+                    docker build -t devopseasylearning/weatherapp-ui:${BUILD_NUMBER} .
                 '''
             }
         }
@@ -154,7 +154,7 @@ pipeline {
             }
             steps {
                 sh '''
-                    docker push devopseasylearning/weatherapp-ui:$v{BUILD_NUMBER}
+                    docker push devopseasylearning/weatherapp-ui:${BUILD_NUMBER}
                 '''
             }
         }
@@ -163,7 +163,7 @@ pipeline {
             steps {
                 sh '''
                     cd $WORKSPACE/weatherapp/weather
-                    docker build -t devopseasylearning/weatherapp-weather:$v{BUILD_NUMBER} .
+                    docker build -t devopseasylearning/weatherapp-weather:${BUILD_NUMBER} .
                 '''
             }
         }
@@ -176,7 +176,7 @@ pipeline {
             }
             steps {
                 sh '''
-                    docker push devopseasylearning/weatherapp-weather:$v{BUILD_NUMBER}
+                    docker push devopseasylearning/weatherapp-weather:${BUILD_NUMBER}
                 '''
             }
         }
@@ -185,7 +185,7 @@ pipeline {
             steps {
                 sh '''
                     cd $WORKSPACE/weatherapp/redis
-                    docker build -t devopseasylearning/weatherapp-redis:$v{BUILD_NUMBER} .
+                    docker build -t devopseasylearning/weatherapp-redis:${BUILD_NUMBER} .
                 '''
             }
         }
@@ -198,7 +198,7 @@ pipeline {
             }
             steps {
                 sh '''
-                    docker push devopseasylearning/weatherapp-redis:$v{BUILD_NUMBER}
+                    docker push devopseasylearning/weatherapp-redis:${BUILD_NUMBER}
                 '''
             }
         }
@@ -207,7 +207,7 @@ pipeline {
             steps {
                 sh '''
                     cd $WORKSPACE/weatherapp/db
-                    docker build -t devopseasylearning/weatherapp-db:$v{BUILD_NUMBER} .
+                    docker build -t devopseasylearning/weatherapp-db:${BUILD_NUMBER} .
                 '''
             }
         }
@@ -220,7 +220,7 @@ pipeline {
             }
             steps {
                 sh '''
-                    docker push devopseasylearning/weatherapp-db:$v{BUILD_NUMBER}
+                    docker push devopseasylearning/weatherapp-db:${BUILD_NUMBER}
                 '''
             }
         }
