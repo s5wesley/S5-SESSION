@@ -1,24 +1,28 @@
 pipeline {
     agent any
-    }
+
     environment {
         DOCKERHUB_CREDENTIALS = credentials('dockerhub')
     }
+
     options {
         buildDiscarder(logRotator(numToKeepStr: '5'))
         disableConcurrentBuilds()
         timeout(time: 60, unit: 'MINUTES')
         timestamps()
     }
+
     stages {
         stage('Setup parameters') {
             steps {
                 script {
                     properties([
                         parameters([
-                            string(name: 'WARNTIME',
+                            string(
+                                name: 'WARNTIME',
                                 defaultValue: '2',
-                                description: '''Warning time (in minutes) before starting upgrade'''),
+                                description: '''Warning time (in minutes) before starting upgrade'''
+                            ),
                             string(
                                 defaultValue: 'develop',
                                 name: 'Please_leave_this_section_as_it_is',
@@ -86,7 +90,6 @@ pipeline {
             }
             environment {
                 CI = 'true'
-                // scannerHome = tool 'Sonar'
                 scannerHome = '/opt/sonar-scanner'
             }
             steps {
@@ -120,9 +123,9 @@ pipeline {
         }
 
         stage('Push auth') {
-            when { 
+            when {
                 expression {
-                    env.GIT_BRANCH == 'origin/develop' 
+                    env.GIT_BRANCH == 'origin/develop'
                 }
             }
             steps {
@@ -131,8 +134,6 @@ pipeline {
                 '''
             }
         }
-
-        // Repeat similar blocks for other stages
 
         stage('Build UI') {
             steps {
@@ -144,9 +145,9 @@ pipeline {
         }
 
         stage('Push UI') {
-            when { 
+            when {
                 expression {
-                    env.GIT_BRANCH == 'origin/develop' 
+                    env.GIT_BRANCH == 'origin/develop'
                 }
             }
             steps {
@@ -166,9 +167,9 @@ pipeline {
         }
 
         stage('Push weather') {
-            when { 
+            when {
                 expression {
-                    env.GIT_BRANCH == 'origin/develop' 
+                    env.GIT_BRANCH == 'origin/develop'
                 }
             }
             steps {
@@ -188,9 +189,9 @@ pipeline {
         }
 
         stage('Push redis') {
-            when { 
+            when {
                 expression {
-                    env.GIT_BRANCH == 'origin/develop' 
+                    env.GIT_BRANCH == 'origin/develop'
                 }
             }
             steps {
@@ -210,9 +211,9 @@ pipeline {
         }
 
         stage('Push db') {
-            when { 
+            when {
                 expression {
-                    env.GIT_BRANCH == 'origin/develop' 
+                    env.GIT_BRANCH == 'origin/develop'
                 }
             }
             steps {
@@ -223,29 +224,29 @@ pipeline {
         }
 
         stage('warning') {
-            agent { 
+            agent {
                 label "Jenkins-static-agent"
             }
-            when { 
+            when {
                 expression {
-                    env.GIT_BRANCH == 'origin/develop' 
+                    env.GIT_BRANCH == 'origin/develop'
                 }
             }
             steps {
                 script {
                     notifyUpgrade(currentBuild.currentResult, "WARNING")
-                    sleep(time:env.WARNTIME, unit:"MINUTES")
+                    sleep(time: env.WARNTIME, unit: "MINUTES")
                 }
             }
         }
 
         stage('Generate-compose') {
-            agent { 
+            agent {
                 label "Jenkins-static-agent"
             }
-            when { 
+            when {
                 expression {
-                    env.GIT_BRANCH == 'origin/develop' 
+                    env.GIT_BRANCH == 'origin/develop'
                 }
             }
             steps {
@@ -256,7 +257,6 @@ pipeline {
                         string(credentialsId: 'WEATHERAPP_DB_PASSWORD', variable: 'WEATHERAPP_DB_PASSWORD'),
                         string(credentialsId: 'WEATHERAPP_APIKEY', variable: 'WEATHERAPP_APIKEY')
                     ]) {
-
                         sh '''
                             cat <<EOF > docker-compose.yml
                             version: '3.5'
@@ -346,12 +346,12 @@ pipeline {
         }
 
         stage('Deploy') {
-            agent { 
+            agent {
                 label "Jenkins-static-agent"
             }
-            when { 
+            when {
                 expression {
-                    env.GIT_BRANCH == 'origin/develop' 
+                    env.GIT_BRANCH == 'origin/develop'
                 }
             }
             steps {
@@ -366,12 +366,12 @@ pipeline {
         // Repeat similar blocks for other stages
 
         stage('checking website') {
-            agent { 
+            agent {
                 label "Jenkins-static-agent"
             }
-            when { 
+            when {
                 expression {
-                    env.GIT_BRANCH == 'origin/develop' 
+                    env.GIT_BRANCH == 'origin/develop'
                 }
             }
             steps {
@@ -382,3 +382,4 @@ pipeline {
             }
         }
     }
+}
