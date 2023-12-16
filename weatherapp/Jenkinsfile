@@ -229,7 +229,7 @@ pipeline {
 
         stage('warning') {
             agent {
-                label "Jenkins-static-agent"
+                label "production"
             }
             when {
                 expression {
@@ -246,7 +246,7 @@ pipeline {
 
         stage('Generate-compose') {
             agent {
-                label "Jenkins-static-agent"
+                label "production"
             }
             when {
                 expression {
@@ -351,7 +351,7 @@ pipeline {
 
         stage('Deploy') {
             agent {
-                label "Jenkins-static-agent"
+                label "production"
             }
             when {
                 expression {
@@ -371,7 +371,7 @@ pipeline {
 
         stage('checking website') {
             agent {
-                label "Jenkins-static-agent"
+                label "production"
             }
             when {
                 expression {
