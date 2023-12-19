@@ -113,7 +113,7 @@ pipeline {
             
             steps {
                     
-                    sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+                    sh "echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin"
             }
         }
 
@@ -229,7 +229,7 @@ pipeline {
 
         stage('warning') {
             agent {
-                label "production"
+                label "Jenkins-static-agent"
             }
             when {
                 expression {
@@ -246,7 +246,7 @@ pipeline {
 
         stage('Generate-compose') {
             agent {
-                label "production"
+                label "Jenkins-static-agent"
             }
             when {
                 expression {
@@ -351,7 +351,7 @@ pipeline {
 
         stage('Deploy') {
             agent {
-                label "production"
+                label "Jenkins-static-agent"
             }
             when {
                 expression {
@@ -371,7 +371,7 @@ pipeline {
 
         stage('checking website') {
             agent {
-                label "production"
+                label "Jenkins-static-agent"
             }
             when {
                 expression {
