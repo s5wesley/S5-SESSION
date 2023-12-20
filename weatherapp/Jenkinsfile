@@ -1,9 +1,6 @@
 pipeline {
     agent any 
 
-    environment {
-        DOCKERHUB_CREDENTIALS=credentials('dockerhub')
-    }
 
     options {
         buildDiscarder(logRotator(numToKeepStr: '5'))
@@ -107,17 +104,23 @@ pipeline {
         //     }
         // }
 
-        stage('Login') {
-            steps {
-                script {
-                    withCredentials([
-                        usernamePassword(credentialsId: 'dockerhub', passwordVariable: 'DOCKERHUB_CREDENTIALS_PSW', usernameVariable: 'DOCKERHUB_CREDENTIALS_USR')
-                    ]) {
-                        sh "echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin"
-                    }
+stage('Login to DockerHub') {
+    steps {
+        script {
+            // Retrieve DockerHub credentials from Jenkins credentials
+            withCredentials([usernamePassword(credentialsId: 'dockerhub', passwordVariable: 'DOCKERHUB_PASSWORD', usernameVariable: 'DOCKERHUB_USERNAME')]) {
+                
+                // Log in to DockerHub
+                def dockerHubLogin = sh(script: "docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}", returnStatus: true)
+                
+                if (dockerHubLogin != 0) {
+                    error('Failed to log in to DockerHub. Check credentials and try again.')
                 }
             }
         }
+    }
+}
+
 
         stage('Build auth') {
             steps {
@@ -269,7 +272,7 @@ pipeline {
                             services:
                                 db:
                                     container_name: weatherapp-db
-                                    image: devopseasylearning/weatherapp-db:${BUILD_NUMBER}
+                                    image: devopseasylearning/weatherapp-db:v${BUILD_NUMBER}.1
                                     environment:
                                         MYSQL_ROOT_PASSWORD: ${WEATHERAPP_MYSQL_ROOT_PASSWORD}
                                     volumes:
@@ -280,7 +283,7 @@ pipeline {
 
                                 redis:
                                     container_name: weatherapp-redis
-                                    image: devopseasylearning/weatherapp-redis:${BUILD_NUMBER}
+                                    image: devopseasylearning/weatherapp-redis:v${BUILD_NUMBER}.1
                                     networks:
                                         - weatherapp
                                     environment:
@@ -292,7 +295,7 @@ pipeline {
 
                                 weather:
                                     container_name: weatherapp-weather
-                                    image: devopseasylearning/weatherapp-weather:${BUILD_NUMBER}
+                                    image: devopseasylearning/weatherapp-weather:$v{BUILD_NUMBER}.1
                                     expose:
                                         - 5000
                                     environment:
@@ -306,7 +309,7 @@ pipeline {
 
                                 auth:
                                     container_name: weatherapp-auth
-                                    image: devopseasylearning/weatherapp-auth:${BUILD_NUMBER}
+                                    image: devopseasylearning/weatherapp-auth:v${BUILD_NUMBER}.1
                                     environment:
                                         DB_HOST: db
                                         DB_PASSWORD: ${WEATHERAPP_DB_PASSWORD}
@@ -320,7 +323,7 @@ pipeline {
 
                                 ui:
                                     container_name: weatherapp-ui
-                                    image: devopseasylearning/weatherapp-ui:${BUILD_NUMBER}
+                                    image: devopseasylearning/weatherapp-ui:v${BUILD_NUMBER}.1
                                     environment:
                                         AUTH_HOST: auth
                                         AUTH_PORT: 8080
