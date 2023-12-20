@@ -1,6 +1,9 @@
 pipeline {
-    agent any 
+    agent any
 
+    environment {
+        DOCKERHUB_CREDENTIALS = credentials('dockerhub')
+    }
 
     options {
         buildDiscarder(logRotator(numToKeepStr: '5'))
@@ -87,7 +90,7 @@ pipeline {
             }
             environment {
                 CI = 'true'
-                scannerHome='/opt/sonar-scanner'
+                scannerHome = '/opt/sonar-scanner'
             }
             steps {
                 withSonarQubeEnv('Sonar') {
@@ -96,31 +99,11 @@ pipeline {
             }
         }
 
-        // stage("Quality Gate") {
-        //     steps {
-        //         timeout(time: 1, unit: 'HOURS') {
-        //             waitForQualityGate abortPipeline: true 
-        //             }
-        //     }
-        // }
-
-stage('Login to DockerHub') {
-    steps {
-        script {
-            // Retrieve DockerHub credentials from Jenkins credentials
-            withCredentials([usernamePassword(credentialsId: 'dockerhub', passwordVariable: 'DOCKERHUB_PASSWORD', usernameVariable: 'DOCKERHUB_USERNAME')]) {
-                
-                // Log in to DockerHub
-                def dockerHubLogin = sh(script: "docker login -u ${DOCKERHUB_USERNAME} -p ${DOCKERHUB_PASSWORD}", returnStatus: true)
-                
-                if (dockerHubLogin != 0) {
-                    error('Failed to log in to DockerHub. Check credentials and try again.')
-                }
+        stage('Login') {
+            steps {
+                sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
             }
         }
-    }
-}
-
 
         stage('Build auth') {
             steps {
@@ -371,8 +354,6 @@ stage('Login to DockerHub') {
                 '''
             }
         }
-
-        // Repeat similar blocks for other stages
 
         stage('checking website') {
             agent {
