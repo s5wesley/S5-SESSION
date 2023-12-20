@@ -126,7 +126,7 @@ stage('Login to DockerHub') {
             steps {
                 sh '''
                     cd $WORKSPACE/weatherapp/auth
-                    docker build -t devopseasylearning/weatherapp-auth:v${BUILD_NUMBER}.1 .
+                    docker build -t bulawesley/auth:v${BUILD_NUMBER}.1 .
                 '''
             }
         }
@@ -139,7 +139,7 @@ stage('Login to DockerHub') {
             }
             steps {
                 sh '''
-                    docker push devopseasylearning/weatherapp-auth:v${BUILD_NUMBER}.1
+                    docker push bulawesley/auth:v${BUILD_NUMBER}.1
                 '''
             }
         }
@@ -148,7 +148,7 @@ stage('Login to DockerHub') {
             steps {
                 sh '''
                     cd $WORKSPACE/weatherapp/UI
-                    docker build -t devopseasylearning/weatherapp-ui:v${BUILD_NUMBER}.1 .
+                    docker build -t bulawesley/ui:v${BUILD_NUMBER}.1 .
                 '''
             }
         }
@@ -161,7 +161,7 @@ stage('Login to DockerHub') {
             }
             steps {
                 sh '''
-                    docker push devopseasylearning/weatherapp-ui:v${BUILD_NUMBER}.1
+                    docker push bulawesley/ui:v${BUILD_NUMBER}.1
                 '''
             }
         }
@@ -170,7 +170,7 @@ stage('Login to DockerHub') {
             steps {
                 sh '''
                     cd $WORKSPACE/weatherapp/weather
-                    docker build -t devopseasylearning/weatherapp-weather:v${BUILD_NUMBER}.1 .
+                    docker build -t bulawesley/weather:v${BUILD_NUMBER}.1 .
                 '''
             }
         }
@@ -183,7 +183,7 @@ stage('Login to DockerHub') {
             }
             steps {
                 sh '''
-                    docker push devopseasylearning/weatherapp-weather:v${BUILD_NUMBER}.1
+                    docker push bulawesley/weather:v${BUILD_NUMBER}.1
                 '''
             }
         }
@@ -192,7 +192,7 @@ stage('Login to DockerHub') {
             steps {
                 sh '''
                     cd $WORKSPACE/weatherapp/redis
-                    docker build -t devopseasylearning/weatherapp-redis:v${BUILD_NUMBER}.1 .
+                    docker build -t bulawesley/redis:v${BUILD_NUMBER}.1 .
                 '''
             }
         }
@@ -205,7 +205,7 @@ stage('Login to DockerHub') {
             }
             steps {
                 sh '''
-                    docker push devopseasylearning/weatherapp-redis:v${BUILD_NUMBER}.1
+                    docker push bulawesley/redis:v${BUILD_NUMBER}.1
                 '''
             }
         }
@@ -214,7 +214,7 @@ stage('Login to DockerHub') {
             steps {
                 sh '''
                     cd $WORKSPACE/weatherapp/db
-                    docker build -t devopseasylearning/weatherapp-db:v${BUILD_NUMBER}.1 .
+                    docker build -t bulawesley/db:v${BUILD_NUMBER}.1 .
                 '''
             }
         }
@@ -227,7 +227,7 @@ stage('Login to DockerHub') {
             }
             steps {
                 sh '''
-                    docker push devopseasylearning/weatherapp-db:v${BUILD_NUMBER}.1
+                    docker push bulawesley/db:v${BUILD_NUMBER}.1
                 '''
             }
         }
@@ -272,7 +272,7 @@ stage('Login to DockerHub') {
                             services:
                                 db:
                                     container_name: weatherapp-db
-                                    image: devopseasylearning/weatherapp-db:v${BUILD_NUMBER}.1
+                                    image: bulawesley/db:v${BUILD_NUMBER}.1
                                     environment:
                                         MYSQL_ROOT_PASSWORD: ${WEATHERAPP_MYSQL_ROOT_PASSWORD}
                                     volumes:
@@ -283,7 +283,7 @@ stage('Login to DockerHub') {
 
                                 redis:
                                     container_name: weatherapp-redis
-                                    image: devopseasylearning/weatherapp-redis:v${BUILD_NUMBER}.1
+                                    image: bulawesley/redis:v${BUILD_NUMBER}.1
                                     networks:
                                         - weatherapp
                                     environment:
@@ -295,7 +295,7 @@ stage('Login to DockerHub') {
 
                                 weather:
                                     container_name: weatherapp-weather
-                                    image: devopseasylearning/weatherapp-weather:$v{BUILD_NUMBER}.1
+                                    image: bulawesley/weather:$v{BUILD_NUMBER}.1
                                     expose:
                                         - 5000
                                     environment:
@@ -309,7 +309,7 @@ stage('Login to DockerHub') {
 
                                 auth:
                                     container_name: weatherapp-auth
-                                    image: devopseasylearning/weatherapp-auth:v${BUILD_NUMBER}.1
+                                    image: bulawesley/auth:v${BUILD_NUMBER}.1
                                     environment:
                                         DB_HOST: db
                                         DB_PASSWORD: ${WEATHERAPP_DB_PASSWORD}
@@ -323,7 +323,7 @@ stage('Login to DockerHub') {
 
                                 ui:
                                     container_name: weatherapp-ui
-                                    image: devopseasylearning/weatherapp-ui:v${BUILD_NUMBER}.1
+                                    image: bulawesley/ui:v${BUILD_NUMBER}.1
                                     environment:
                                         AUTH_HOST: auth
                                         AUTH_PORT: 8080
