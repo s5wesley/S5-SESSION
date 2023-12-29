@@ -8,7 +8,6 @@ services:
       MYSQL_ROOT_PASSWORD: my-secret-pw
     volumes:
       - db-data:/var/lib/mysql
-      - db-data
     networks:
       - weatherapp
     restart: always
@@ -23,7 +22,6 @@ services:
       REDIS_PASSWORD: redis
     volumes:
       - redis-data:/data
-      - redis-data
     restart: always
 
   weather:
