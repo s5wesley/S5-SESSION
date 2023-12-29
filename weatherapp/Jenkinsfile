@@ -249,7 +249,7 @@ pipeline {
                 string(credentialsId: 'WEATHERAPP_DB_PASSWORD', variable: 'WEATHERAPP_DB_PASSWORD'),
                 string(credentialsId: 'WEATHERAPP_APIKEY', variable: 'WEATHERAPP_APIKEY')
             ]) {
-                sh """
+                 sh '''
                     cat <<EOF > docker-compose.yml
                     version: '3.5'
                     services:
@@ -331,7 +331,7 @@ pipeline {
                         db-data:
                         redis-data:
                     EOF
-                """
+                '''
             }
         }
     }
@@ -351,7 +351,8 @@ stage('Deploy') {
             docker-compose down --remove-orphans || true
             docker-compose up -d 
             docker-compose ps 
-        '''
+          
+           '''
     }
 }
 
