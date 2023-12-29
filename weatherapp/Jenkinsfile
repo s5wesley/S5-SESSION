@@ -260,7 +260,7 @@ stage('Generate-compose') {
                                 MYSQL_ROOT_PASSWORD: ${WEATHERAPP_MYSQL_ROOT_PASSWORD}
                             volumes:
                                 - db-data:/var/lib/mysql
-                                - db-data
+                                - db-data:
                             networks:
                                 - weatherapp
                             restart: always
@@ -275,7 +275,7 @@ stage('Generate-compose') {
                                 REDIS_PASSWORD: ${WEATHERAPP_REDIS_PASSWORD}
                             volumes:
                                 - redis-data:/data
-                                - redis-data
+                                - redis-data:
                             restart: always
 
                         weather:
