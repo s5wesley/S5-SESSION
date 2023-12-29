@@ -337,24 +337,24 @@ pipeline {
     }
 }
 
-        stage('Deploy') {
-            agent {
-                label "Jenkins-static-agent"
-            }
-            when {
-                expression {
-                    env.GIT_BRANCH == 'origin/develop'
-                }
-            }
-            steps {
-                sh '''
-                    docker-compose down --remove-orphans || true
-                    docker-compose up -d 
-                    docker-compose ps 
-                    ip addr show eth0 | grep inet | awk '{print $2}' | cut -d/ -f1
-                '''
-            }
+stage('Deploy') {
+    agent {
+        label "Jenkins-static-agent"
+    }
+    when {
+        expression {
+            env.GIT_BRANCH == 'origin/develop'
         }
+    }
+    steps {
+        sh '''
+            docker-compose down --remove-orphans || true
+            docker-compose up -d 
+            docker-compose ps 
+            ip addr show eth0 | grep -oP 'inet \K[\d.]+'
+        '''
+    }
+}
 
         stage('checking website') {
             agent {
