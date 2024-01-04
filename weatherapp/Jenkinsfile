@@ -308,7 +308,6 @@ stage('Generate-compose') {
                             container_name: weatherapp-ui
                             image: devopseasylearning/weatherapp-ui:v${BUILD_NUMBER}.1
                             environment:
-                                ERIC: eric
                                 AUTH_HOST: auth
                                 AUTH_PORT: 8080
                                 WEATHER_HOST: weather
@@ -329,8 +328,8 @@ stage('Generate-compose') {
                         weatherapp:
 
                     volumes:
-                        db-data:
-                        redis-data:
+                        db-data':'
+                        redis-data':'
                     EOF
                 '''
             }
